@@ -1,0 +1,109 @@
+# =========================
+# EXPLAIN AI — РЕПЕТИТОР
+# =========================
+
+import ast
+import copy
+
+# -------------------------
+# ОПИСАНИЯ КОНСТРУКЦИЙ
+# -------------------------
+
+NODE_EXPLANATIONS = {
+    ast.Assign: "Присваивание значения переменной.",
+    ast.Expr: "Выполнение выражения.",
+    ast.Call: "Вызов функции.",
+    ast.If: "Условный оператор if.",
+    ast.For: "Цикл for.",
+    ast.While: "Цикл while.",
+    ast.Compare: "Сравнение значений.",
+    ast.BinOp: "Математическая операция.",
+    ast.Name: "Использование переменной.",
+    ast.Constant: "Константа (число, строка)."
+}
+
+# -------------------------
+# ОБЪЯСНЕНИЕ AST
+# -------------------------
+
+def explain_node(node):
+    for t, desc in NODE_EXPLANATIONS.items():
+        if isinstance(node, t):
+            return desc
+    return "Выполнение инструкции."
+
+# -------------------------
+# ПОШАГОВОЕ ОБЪЯСНЕНИЕ
+# -------------------------
+
+def explain_code(code):
+    print("\n📖 ОБЪЯСНЕНИЕ КОДА ПО СТРОКАМ\n")
+
+    env = {}
+    prev_env = {}
+
+    lines = code.splitlines()
+
+    for i, line in enumerate(lines, 1):
+        if not line.strip():
+            continue
+
+        print(f"🔹 Строка {i}: {line}")
+
+        try:
+            tree = ast.parse(line)
+            for node in ast.walk(tree):
+                text = explain_node(node)
+                if text:
+                    print("   ➤", text)
+                    break
+        except:
+            print("   ➤ Невозможно разобрать строку")
+
+        try:
+            exec(line, env)
+        except Exception as e:
+            print("   ❌ Ошибка выполнения:", e)
+            break
+
+        changed = {}
+        for k in env:
+            if not k.startswith("__"):
+                if k not in prev_env or prev_env[k] != env[k]:
+                    changed[k] = env[k]
+
+        if changed:
+            print("   🧠 Изменились переменные:", changed)
+        else:
+            print("   ℹ Переменные не изменились")
+
+        prev_env = copy.deepcopy(env)
+
+    print("\n✅ Объяснение завершено.")
+
+# -------------------------
+# ПЕСОЧНИЦА
+# -------------------------
+
+def sandbox():
+    print("\n🧪 ПЕСОЧНИЦА PYTHON")
+    print("Вводи код построчно. Напиши 'конец' для запуска.\n")
+
+    code = []
+    while True:
+        line = input()
+        if line.strip().lower() == "конец":
+            break
+        code.append(line)
+
+    code_text = "\n".join(code)
+
+    print("\n▶ Выполнение:\n")
+    try:
+        exec(code_text)
+    except Exception as e:
+        print("❌ Ошибка:", e)
+
+    explain = input("\n❓ Объяснить код построчно? (да/нет): ").lower()
+    if explain == "да":
+        explain_code(code_text)
