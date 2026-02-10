@@ -1,0 +1,119 @@
+# =========================
+# SOLVER AI — БЫСТРЫЕ РЕШЕНИЯ
+# =========================
+
+import re
+
+# -------------------------
+# ВСПОМОГАТЕЛЬНОЕ
+# -------------------------
+
+def normalize(text):
+    text = text.lower()
+    replaces = {
+        "кад": "код",
+        "вывисти": "вывести",
+        "переменых": "переменных",
+        "большее": "больше",
+        "менше": "меньше",
+        "равно": "равны"
+    }
+    for k, v in replaces.items():
+        text = text.replace(k, v)
+    return text
+
+# -------------------------
+# РЕШЕНИЯ ЧАСТЫХ ЗАДАЧ
+# -------------------------
+
+def solve_print(text):
+    m = re.search(r"вывести\s+(\d+)", text)
+    if m:
+        n = m.group(1)
+        return f"print({n})"
+
+def solve_if_ab(text):
+    if "a больше b" in text or "a > b" in text:
+        return (
+            "a = int(input())\n"
+            "b = int(input())\n"
+            "if a > b:\n"
+            "    print(a)\n"
+            "elif b > a:\n"
+            "    print(b)\n"
+            "else:\n"
+            "    print('=')"
+        )
+
+def solve_sum(text):
+    if "сумм" in text:
+        return (
+            "a = int(input())\n"
+            "b = int(input())\n"
+            "print(a + b)"
+        )
+
+def solve_for(text):
+    if "цикл for" in text or "for" in text:
+        return (
+            "for i in range(5):\n"
+            "    print(i)"
+        )
+
+def solve_while(text):
+    if "while" in text:
+        return (
+            "i = 0\n"
+            "while i < 5:\n"
+            "    print(i)\n"
+            "    i += 1"
+        )
+
+def solve_input(text):
+    if "ввести" in text:
+        return "x = input()\nprint(x)"
+
+# -------------------------
+# ГЛАВНЫЙ РЕШАТЕЛЬ
+# -------------------------
+
+def solve_task(user_text):
+    text = normalize(user_text)
+
+    for solver in [
+        solve_print,
+        solve_if_ab,
+        solve_sum,
+        solve_for,
+        solve_while,
+        solve_input
+    ]:
+        result = solver(text)
+        if result:
+            return result
+
+    return None
+
+# -------------------------
+# ДИАЛОГ
+# -------------------------
+
+def solver_dialog():
+    print("\n🧠 Опиши задачу обычными словами:")
+    user = input(">> ")
+
+    solution = solve_task(user)
+
+    if not solution:
+        print("❌ Я не понял задачу.")
+        print("Попробуй описать проще.")
+        return
+
+    print("\n✅ Готовое решение:\n")
+    print(solution)
+
+    print("\n▶ Пример выполнения:")
+    try:
+        exec(solution)
+    except Exception as e:
+        print("⚠ Ошибка при выполнении:", e)
