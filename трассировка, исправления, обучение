@@ -1,0 +1,172 @@
+# =========================
+# TRACER AI — АНАЛИЗ КОДА
+# =========================
+
+import ast
+import traceback
+from textwrap import indent
+
+# -------------------------
+# ПОШАГОВАЯ ТРАССИРОВКА
+# -------------------------
+
+def trace_code(code):
+    print("\n🔎 Пошаговое выполнение:\n")
+    env = {}
+    lines = code.splitlines()
+
+    for i, line in enumerate(lines, 1):
+        if not line.strip():
+            continue
+        print(f"▶ Строка {i}: {line}")
+        try:
+            exec(line, env)
+            vars_view = {k: v for k, v in env.items() if not k.startswith("__")}
+            print("   Переменные:", vars_view)
+        except Exception as e:
+            print("   ❌ Ошибка:", e)
+            break
+    print("\n✔ Трассировка завершена.")
+
+# -------------------------
+# ИСПРАВЛЕНИЕ КОДА
+# -------------------------
+
+COMMON_FIXES = [
+    ("print 3", "print(3)"),
+    ("if a > b print(a)", "if a > b:\n    print(a)"),
+    ("for i in range 5", "for i in range(5):"),
+]
+
+def fix_code(code):
+    fixed = code
+    for bad, good in COMMON_FIXES:
+        if bad in fixed:
+            fixed = fixed.replace(bad, good)
+    return fixed
+
+def fix_dialog():
+    print("\n🧩 Вставь свой код для исправления:")
+    user_code = []
+    while True:
+        line = input()
+        if line.strip().lower() == "конец":
+            break
+        user_code.append(line)
+
+    code = "\n".join(user_code)
+    fixed = fix_code(code)
+
+    if fixed != code:
+        print("\n✅ Возможное исправление:\n")
+        print(fixed)
+    else:
+        print("\n🤔 Я не нашёл типовых ошибок, но вот что говорит Python:\n")
+        try:
+            compile(code, "<user>", "exec")
+            print("Синтаксис выглядит корректно.")
+        except Exception:
+            print(traceback.format_exc())
+
+# -------------------------
+# НЕСКОЛЬКО ВАРИАНТОВ РЕШЕНИЯ
+# -------------------------
+
+def multiple_solutions(task_key):
+    if task_key == "max_ab":
+        return [
+            (
+                "Вариант 1 (if/else)",
+                "a = int(input())\nb = int(input())\nprint(a if a>b else b if b>a else '=')"
+            ),
+            (
+                "Вариант 2 (max)",
+                "a = int(input())\nb = int(input())\nprint(max(a,b))"
+            )
+        ]
+    return []
+
+def show_multiple(task_key):
+    sols = multiple_solutions(task_key)
+    if not sols:
+        print("❌ Нет нескольких вариантов для этой задачи.")
+        return
+    for title, code in sols:
+        print(f"\n🔹 {title}\n{code}")
+
+# -------------------------
+# РЕЖИМ ОБУЧЕНИЯ
+# -------------------------
+
+LESSONS = {
+    "for": {
+        "question": "Как вывести числа от 0 до 4?",
+        "hint": "Используй range(5)",
+        "answer": "for i in range(5):\n    print(i)"
+    },
+    "if": {
+        "question": "Как проверить, что a больше b?",
+        "hint": "Нужен оператор >",
+        "answer": "if a > b:\n    print(a)"
+    }
+}
+
+def learning_mode(topic):
+    lesson = LESSONS.get(topic)
+    if not lesson:
+        print("❌ Пока нет урока по этой теме.")
+        return
+
+    print("\n🎓 ВОПРОС:")
+    print(lesson["question"])
+    input("\nНажми Enter для подсказки...")
+    print("💡 Подсказка:", lesson["hint"])
+    input("\nНажми Enter для ответа...")
+    print("✅ Ответ:\n")
+    print(lesson["answer"])
+
+# -------------------------
+# МЕНЮ МОДУЛЯ
+# -------------------------
+
+def tracer_menu():
+    print("""
+🧠 АНАЛИЗ КОДА — ВОЗМОЖНОСТИ
+- трассировка
+- исправь код
+- несколько решений
+- обучение
+- выход
+""")
+
+    while True:
+        cmd = input("\n>> ").lower()
+
+        if cmd == "выход":
+            break
+
+        if "трасс" in cmd:
+            print("Вставь код, затем напиши 'конец':")
+            code = []
+            while True:
+                l = input()
+                if l.strip().lower() == "конец":
+                    break
+                code.append(l)
+            trace_code("\n".join(code))
+            continue
+
+        if "исправ" in cmd:
+            fix_dialog()
+            continue
+
+        if "несколько" in cmd:
+            show_multiple("max_ab")
+            continue
+
+        if "обуч" in cmd:
+            topic = input("Тема (for/if): ")
+            learning_mode(topic)
+            continue
+
+        print("🤔 Команда не распознана.")
